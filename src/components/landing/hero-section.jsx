@@ -26,7 +26,7 @@ export function HeroSection() {
           </div>
           <div className="mx-auto lg:ml-auto">
             <Image
-              src="/placeholder.svg?height=550&width=550"
+              src="/woman-thoughtfully-analyzes-various-food-products-while-determining-healthy-choices-her-diet-woman-analyzes-products-selects-necessary-healthy-lifestyle_538213-139520.jpg"
               alt="Healthy food and nutrition"
               width={550}
               height={550}

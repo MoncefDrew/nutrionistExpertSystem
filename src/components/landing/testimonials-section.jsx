@@ -16,7 +16,7 @@ export function TestimonialsSection() {
           <div className="rounded-lg border p-6">
             <div className="flex items-start gap-4">
               <Image
-                src="/placeholder.svg?height=60&width=60"
+                src="/avatars-000339084123-nag0p1-t1080x1080.jpg"
                 alt="Client"
                 width={60}
                 height={60}
@@ -34,7 +34,7 @@ export function TestimonialsSection() {
           <div className="rounded-lg border p-6">
             <div className="flex items-start gap-4">
               <Image
-                src="/placeholder.svg?height=60&width=60"
+                src="/63.jpg"
                 alt="Client"
                 width={60}
                 height={60}

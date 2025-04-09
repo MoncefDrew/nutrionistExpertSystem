@@ -156,6 +156,14 @@ const SignInPage = () => {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2D2D2D]">
               {/* Profile image placeholder */}
+              <Image
+              src="/63.jpg"
+              alt="Healthy food and nutrition"
+              width={550}
+              height={550}
+              className="rounded-lg object-cover"
+              priority
+            />
             </div>
             <div className="text-[#4B5563]">@michael_webdev</div>
           </div>
