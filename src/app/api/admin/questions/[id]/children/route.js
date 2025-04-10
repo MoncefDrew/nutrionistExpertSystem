@@ -2,7 +2,11 @@ import { prisma } from '../../../../../../lib/prisma';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    if (!params?.id) {
+      return Response.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    const id = params.id;
 
     // Find all questions that are connected through options
     const children = await prisma.questionNode.findMany({
@@ -27,6 +31,22 @@ export async function GET(request, { params }) {
         }
       }
     });
+
+    if (!children || children.length === 0) {
+      // If no children found, try to find the question itself
+      const question = await prisma.questionNode.findUnique({
+        where: { id },
+        include: {
+          options: {
+            include: {
+              next: true
+            }
+          }
+        }
+      });
+
+      return Response.json(question ? [question] : []);
+    }
 
     return Response.json(children);
   } catch (error) {
