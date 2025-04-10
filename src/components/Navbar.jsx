@@ -25,14 +25,16 @@ export function Navbar() {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/auth/sign-in">
+          <Link href="/auth/client/sign-in">
             <Button variant="outline" size="sm">
-              Sign In
+              Sign In as Client
             </Button>
           </Link>
-          <Link href="/auth/sign-up">
-            <Button className="bg-green-600 hover:bg-green-700" size="sm">
-              Sign Up
+          
+          <div className="h-4 w-px bg-gray-200 mx-2" />
+          <Link href="/auth/admin/sign-in">
+            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+              Sign in as Admin
             </Button>
           </Link>
         </div>

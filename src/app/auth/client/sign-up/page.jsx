@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { AuthHeader } from "../../../components/auth-header";
+import { AuthHeader } from "../../../../components/auth-header";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -216,7 +216,7 @@ export default function SignUpPage() {
 
             <p className="text-center text-sm text-[#B4B4B4]">
               Already have an account?{" "}
-              <Link href="/auth/sign-in" className="text-white hover:underline">
+              <Link href="/auth/client/sign-in" className="text-white hover:underline">
                 Sign in
               </Link>
             </p>
