@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -35,7 +35,7 @@ export function AuthMiddleware({ children }: { children: React.ReactNode }) {
       router.push('/admin/chat');
       return;
     }
-  }, [isAuthenticated, pathname, user]);
+  }, [isAuthenticated, pathname, user, router]);
 
   return <>{children}</>;
 } 

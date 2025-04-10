@@ -24,8 +24,8 @@ export function TestimonialsSection() {
               />
               <div>
                 <p className="text-gray-500 italic">
-                  "The personalized nutrition plan helped me lose 20 pounds in 3 months. The expert guidance was
-                  invaluable!"
+                  {`"The personalized nutrition plan helped me lose 20 pounds in 3 months. The expert guidance was
+                  invaluable!"`}
                 </p>
                 <p className="mt-2 font-semibold">Sarah J.</p>
               </div>
@@ -42,8 +42,8 @@ export function TestimonialsSection() {
               />
               <div>
                 <p className="text-gray-500 italic">
-                  "As a nutritionist, this platform has made it so much easier to manage my clients and provide them
-                  with personalized care."
+                  {`"As a nutritionist, this platform has made it so much easier to manage my clients and provide them
+                  with personalized care."`}
                 </p>
                 <p className="mt-2 font-semibold">Dr. Michael T.</p>
               </div>

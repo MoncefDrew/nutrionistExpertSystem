@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChatInterface from './ChatInterface';
 
-const ChatContainer = () => {
+export default function ChatContainer() {
   const [currentNode, setCurrentNode] = useState(null);
   
   // Example decision tree structure
@@ -26,14 +26,14 @@ const ChatContainer = () => {
   };
 
   // Initialize chat
-  useEffect(() => {
-    handleStartChat();
-  }, []);
-
-  const handleStartChat = () => {
+  const handleStartChat = useCallback(() => {
     setCurrentNode('initial');
     updateChatInterface('initial');
-  };
+  }, [updateChatInterface]);
+
+  useEffect(() => {
+    handleStartChat();
+  }, [handleStartChat]);
 
   const updateChatInterface = (nodeId) => {
     const node = decisionTree[nodeId];
@@ -63,6 +63,4 @@ const ChatContainer = () => {
       />
     </div>
   );
-};
-
-export default ChatContainer; 
+} 

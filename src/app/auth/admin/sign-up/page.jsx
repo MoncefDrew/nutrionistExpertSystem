@@ -198,9 +198,9 @@ const AdminSignUpPage = () => {
       {/* Right Section - Professional Image */}
       <div className="flex-1 flex items-center bg-[#0f0e0e] justify-center border-l border-[#2D2D2D] p-16">
         <div className="max-w-[520px]">
-          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">"</div>
+          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">&quot</div>
           <p className="text-[24px] leading-normal text-white mb-8">
-            Join our network of professional nutritionists and make a difference in people's lives through personalized nutrition guidance.
+            Join our network of professional nutritionists and make a difference in people&aposs lives through personalized nutrition guidance.
           </p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2D2D2D]">

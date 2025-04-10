@@ -130,7 +130,7 @@ const SignInPage = () => {
             </form>
 
             <p className="text-center text-sm text-[#B4B4B4]">
-              Don't have an account?{" "}
+              Don&apost have an account?{" "}
               <a href="/auth/client/sign-up" className="text-white hover:underline">
                 Sign Up Now
               </a>
@@ -140,7 +140,7 @@ const SignInPage = () => {
 
         <div className="mt-8  px-8 text-xs text-[#B4B4B4]">
           <p>
-            By continuing, you agree to NutriExpert's{" "}
+            By continuing, you agree to NutriExpert&aposs{" "}
             <a href="#" className="text-white hover:underline">Terms of Service</a>
             {" "}and{" "}
             <a href="#" className="text-white hover:underline">Privacy Policy</a>,
@@ -152,10 +152,10 @@ const SignInPage = () => {
       {/* Right Section - Testimonial */}
       <div className="flex-1 flex items-center bg-[#0f0e0e] justify-center border-l border-[#2D2D2D] p-16">
         <div className="max-w-[520px]">
-          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">"</div>
+          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">&quot</div>
           <p className="text-[24px]  leading-normal text-white mb-8">
             Did a website with NutritExpert last week with no prior experience with it.
-            Up and running in 20 minutes. It's awesome to use. Thumbs up
+            Up and running in 20 minutes. It&aposs awesome to use. Thumbs up
           </p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2D2D2D]">

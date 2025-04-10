@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { AuthHeader } from '../../../components/auth-header'; // Make sure this path is correct
 import { UserCircle } from 'lucide-react';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -36,11 +36,9 @@ export default function ChatScreen() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    fetchRootQuestion();
-  }, []);
+  
 
-  const fetchRootQuestion = async () => {
+  const fetchRootQuestion = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/questions/tree', {
         headers: {
@@ -60,8 +58,14 @@ export default function ChatScreen() {
       console.error('Error fetching root question:', error);
       setLoading(false);
     }
-  };
+  }, [token]);
 
+
+useEffect(() => {
+    fetchRootQuestion();
+  }, [fetchRootQuestion]);
+  
+  
   const handleOptionClick = async (option: Option) => {
     if (!currentQuestion) return;
 

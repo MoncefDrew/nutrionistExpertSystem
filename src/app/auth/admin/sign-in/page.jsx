@@ -122,7 +122,7 @@ const AdminSignInPage = () => {
         <div className="mt-8 px-8 text-xs text-[#B4B4B4]">
           <p>
             By continuing, you agree to our{" "}
-            <a href="#" className="text-white hover:underline">Terms of Service</a>
+            {`Terms of Service`}
             {" "}and{" "}
             <a href="#" className="text-white hover:underline">Privacy Policy</a>.
           </p>
@@ -132,7 +132,7 @@ const AdminSignInPage = () => {
       {/* Right Section - Professional Image */}
       <div className="flex-1 flex items-center bg-[#0f0e0e] justify-center border-l border-[#2D2D2D] p-16">
         <div className="max-w-[520px]">
-          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">"</div>
+          <div className="text-[80px] text-[#2D2D2D] leading-none mb-4">&quot</div>
           <p className="text-[24px] leading-normal text-white mb-8">
             Join our network of professional nutritionists and help people achieve their health goals through personalized nutrition plans.
           </p>

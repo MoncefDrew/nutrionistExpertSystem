@@ -11,7 +11,7 @@ export default function Page() {
     if (isAuthenticated()) {
       router.push('/client/chat');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   return null;
 }

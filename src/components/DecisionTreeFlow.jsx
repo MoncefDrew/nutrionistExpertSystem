@@ -169,7 +169,7 @@ const DecisionTreeFlow = ({ questions }) => {
       setNodes(allNodes);
       setEdges(allEdges);
     }
-  }, [questions, processQuestionAndOptions]);
+  }, [questions, processQuestionAndOptions, setEdges, setNodes]);
 
   // Add this to ensure proper layout
   const layoutElements = {

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { PlusCircle, Trash2, ChevronRight, ChevronDown } from "lucide-react";
 import DecisionTreeFlow from "../../../components/DecisionTreeFlow";
+import { Handle } from 'reactflow';
 
 // TreeNode Component
 const TreeNode = ({ node, level = 0, onSelect }) => {
