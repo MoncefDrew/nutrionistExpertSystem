@@ -369,7 +369,7 @@ const RulesPage = () => {
           </div>
 
           {/* Right Panel - Tree Visualization */}
-          <div className="bg-[#1C1C1C] rounded-lg border border-[#2D2D2D] h-[800px]">
+          <div className="bg-[#1C1C1C] rounded-lg border border-[#2D2D2D] ">
             <DecisionTreeFlow questions={questionsTree} />
           </div>
         </div>
