@@ -23,3 +23,23 @@ enum UserRole {
   client
   nutritionist
 }
+
+model QuestionNode {
+  id        String   @id @default(cuid())
+  text      String
+  parentId  String?  @db.Text
+  parent    QuestionNode? @relation("NodeChildren", fields: [parentId], references: [id])
+  children  QuestionNode[] @relation("NodeChildren")
+  options   Option[] @relation("Options")
+  nextOptions Option[] @relation()
+  isFinal   Boolean  @default(false)
+}
+
+model Option {
+  id        String   @id @default(cuid())
+  label     String
+  nextId    String?  @db.Text
+  next      QuestionNode? @relation(fields: [nextId], references: [id])
+  question  QuestionNode @relation("Options", fields: [questionId], references: [id])
+  questionId String
+}
