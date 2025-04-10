@@ -3,10 +3,10 @@ import { comparePasswords } from '../../../../lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
 
     // Validate input
-    if (!email || !password) {
+    if (!body.email || !body.password) {
       return Response.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: body.email },
     });
 
     if (!user) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     // Verify password
-    const isValidPassword = await comparePasswords(password, user.password);
+    const isValidPassword = await comparePasswords(body.password, user.password);
 
     if (!isValidPassword) {
       return Response.json(
@@ -35,16 +35,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // Return both token and user data
     return Response.json({
-      success: true,
+      token: "your-jwt-token",
       user: {
         id: user.id,
         email: user.email,
-        username: user.username,
         role: user.role,
+        username: user.username,
       }
     });
-
   } catch (error) {
     console.error('Signin error:', error);
     return Response.json(

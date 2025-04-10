@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "../../../../store/useAuthStore";
 import { AuthHeader } from "../../../../components/auth-header";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import Image from "next/image";
 
 const AdminSignInPage = () => {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const {
     register,
@@ -28,16 +30,14 @@ const AdminSignInPage = () => {
         return;
       }
       
+      // Set auth data in Zustand store
+      setAuth(data.token, data.user);
+      
       toast.success("Welcome back!");
-      localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/admin');
+      router.push('/admin/rules');
     },
     onError: (error) => {
-      if (error.response?.status === 401) {
-        toast.error("Invalid email or password");
-      } else {
-        toast.error("An error occurred. Please try again.");
-      }
+      toast.error(error.response?.data?.error || "Failed to sign in");
     },
   });
 

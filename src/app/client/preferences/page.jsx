@@ -5,17 +5,23 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useAuthStore } from '../../../store/useAuthStore';
 
 const PreferencesPage = () => {
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const { token } = useAuthStore();
 
   // Fetch the first question (root of the decision tree)
   const { data: initialQuestion, isLoading } = useQuery({
     queryKey: ['question', 'root'],
     queryFn: async () => {
-      const response = await axios.get('/api/questions/root');
+      const response = await axios.get('/api/questions/root', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       return response.data;
     }
   });
@@ -33,6 +39,10 @@ const PreferencesPage = () => {
       const response = await axios.post('/api/questions/next', {
         questionId,
         optionId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       return response.data;
     },

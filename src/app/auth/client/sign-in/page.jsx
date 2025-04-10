@@ -8,9 +8,11 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
+import { useAuthStore } from "../../../../store/useAuthStore";
 
 const SignInPage = () => {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [userType, setUserType] = useState("client");
 
   const {
@@ -26,14 +28,16 @@ const SignInPage = () => {
       return response.data;
     },
     onSuccess: (data) => {
+      // Set auth data in Zustand store
+      setAuth(data.token, data.user);
+      
       toast.success("Signed in successfully!");
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(data.user));
+      
       // Redirect based on role
       if (data.user.role === 'nutritionist') {
-        router.push('/admin');
+        router.push('/admin/chat');
       } else {
-        router.push('/client');
+        router.push('/client/chat');
       }
     },
     onError: (error) => {

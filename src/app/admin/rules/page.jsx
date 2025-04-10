@@ -176,7 +176,7 @@ const RulesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#171717] p-8">
+    <div className="min-h-screen bg-[#171717] mt-12 p-8">
       <div className="max-w-[90vw] mx-auto">
         <h1 className="text-3xl font-normal text-white mb-8">Nutrition Assessment Rules</h1>
 
