@@ -8,6 +8,8 @@ import ReactFlow, {
   useEdgesState,
   Controls
 } from 'reactflow';
+import dagre from 'dagre';
+import SinusoidalEdge from './SinusoidalEdge';
 import 'reactflow/dist/style.css';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -24,8 +26,8 @@ const QuestionNode = ({ data }) => (
         Final
       </span>
     )}
-    <Handle type="target" position={Position.Left} className="!bg-white w-2 h-2" />
-    <Handle type="source" position={Position.Right} className="!bg-white w-2 h-2" />
+    <Handle type="target" position={Position.Top} className="!bg-white w-2 h-2" />
+    <Handle type="source" position={Position.Bottom} className="!bg-white w-2 h-2" />
   </div>
 );
 
@@ -36,8 +38,8 @@ const OptionNode = ({ data }) => (
   >
     <div className="text-emerald-500 text-sm">Answer:</div>
     <div className="text-white text-sm mt-1">{data.label}</div>
-    <Handle type="target" position={Position.Left} className="!bg-white w-2 h-2" />
-    <Handle type="source" position={Position.Right} className="!bg-white w-2 h-2" />
+    <Handle type="target" position={Position.Top} className="!bg-white w-2 h-2" />
+    <Handle type="source" position={Position.Bottom} className="!bg-white w-2 h-2" />
   </div>
 );
 
@@ -46,98 +48,119 @@ const nodeTypes = {
   option: OptionNode,
 };
 
-const defaultEdgeOptions = {
-  type: 'smoothstep',
-  style: {
-    stroke: 'white',
-    strokeWidth: 1,
-    opacity: 0.8,
-  },
-  markerEnd: {
-    type: MarkerType.Arrow,
-    color: 'white',
-  }
+const edgeTypes = {
+  sinusoidal: SinusoidalEdge,
+};
+
+// Dagre graph configuration
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 250;
+const nodeHeight = 80;
+
+const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+  const isHorizontal = direction === 'LR';
+  dagreGraph.setGraph({ rankdir: direction });
+
+  // Clear the graph
+  dagreGraph.nodes().forEach(node => dagreGraph.removeNode(node));
+
+  // Add nodes to the graph
+  nodes.forEach(node => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  // Add edges to the graph
+  edges.forEach(edge => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Apply layout
+  dagre.layout(dagreGraph);
+
+  // Get the layout results
+  const layoutedNodes = nodes.map(node => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
 };
 
 const DecisionTreeFlow = ({ questions }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const processQuestionAndOptions = useCallback((question, position, level = 0) => {
+  const processQuestionAndOptions = useCallback((question) => {
     const newNodes = [];
     const newEdges = [];
-    const horizontalSpacing = 400;
-    const verticalSpacing = 150;
 
     // Add question node
     const questionNode = {
       id: question.id,
       type: 'question',
-      position: position,
       data: { 
         text: question.text,
         isFinal: question.isFinal
-      }
+      },
+      position: { x: 0, y: 0 }, // Position will be calculated by dagre
     };
     newNodes.push(questionNode);
 
     // Process options if they exist
     if (question.options && question.options.length > 0) {
-      const totalOptionsHeight = (question.options.length - 1) * verticalSpacing;
-      const startY = position.y - totalOptionsHeight / 2;
-
-      question.options.forEach((option, index) => {
-        // Add option node
-        const optionX = position.x + horizontalSpacing;
-        const optionY = startY + (index * verticalSpacing);
-        
+      question.options.forEach((option) => {
         const optionNode = {
           id: `option-${option.id}`,
           type: 'option',
-          position: { x: optionX, y: optionY },
-          data: { 
-            label: option.label
-          }
+          data: { label: option.label },
+          position: { x: 0, y: 0 },
         };
         newNodes.push(optionNode);
 
-        // Updated edge style
+        // Add edge from question to option with sinusoidal type
         newEdges.push({
           id: `q${question.id}-o${option.id}`,
           source: question.id,
           target: `option-${option.id}`,
-          type: 'straight',
+          type: 'sinusoidal',
           style: { 
             stroke: '#ffffff', 
             strokeWidth: 1,
             opacity: 0.8
+          },
+          markerEnd: {
+            type: MarkerType.Arrow,
+            color: '#ffffff',
           }
         });
 
-        // If option has a next question, process it recursively
         if (option.next) {
-          const nextQuestionX = optionX + horizontalSpacing;
-          const nextQuestionY = optionY;
-          
-          const nextQuestionNodes = processQuestionAndOptions(
-            option.next,
-            { x: nextQuestionX, y: nextQuestionY },
-            level + 1
-          );
-          
-          newNodes.push(...nextQuestionNodes.nodes);
-          newEdges.push(...nextQuestionNodes.edges);
+          const { nodes: childNodes, edges: childEdges } = processQuestionAndOptions(option.next);
+          newNodes.push(...childNodes);
+          newEdges.push(...childEdges);
 
-          // Updated edge style for next question connection
+          // Add edge from option to next question
           newEdges.push({
             id: `o${option.id}-q${option.next.id}`,
             source: `option-${option.id}`,
             target: option.next.id,
-            type: 'straight',
+            type: 'sinusoidal',
             style: { 
               stroke: '#ffffff', 
               strokeWidth: 1,
               opacity: 0.8
+            },
+            markerEnd: {
+              type: MarkerType.Arrow,
+              color: '#ffffff',
             }
           });
         }
@@ -147,36 +170,31 @@ const DecisionTreeFlow = ({ questions }) => {
     return { nodes: newNodes, edges: newEdges };
   }, []);
 
-  // Initialize the flow with questions
   useEffect(() => {
     if (questions) {
       const allNodes = [];
       const allEdges = [];
-      const verticalSpacing = 300;
-      const startX = 50;
 
-      questions.forEach((question, index) => {
-        const questionY = (index * verticalSpacing) + 100;
-        const { nodes: newNodes, edges: newEdges } = processQuestionAndOptions(
-          question,
-          { x: startX, y: questionY }
-        );
-        
+      questions.forEach((question) => {
+        const { nodes: newNodes, edges: newEdges } = processQuestionAndOptions(question);
         allNodes.push(...newNodes);
         allEdges.push(...newEdges);
       });
 
-      setNodes(allNodes);
-      setEdges(allEdges);
+      // Apply layout with increased spacing
+      dagreGraph.setGraph({ 
+        rankdir: 'TB',
+        nodesep: 80,  // Horizontal spacing between nodes
+        ranksep: 120, // Vertical spacing between ranks
+        edgesep: 40,  // Minimum edge separation
+      });
+
+      const layouted = getLayoutedElements(allNodes, allEdges, 'TB');
+      
+      setNodes(layouted.nodes);
+      setEdges(layouted.edges);
     }
   }, [questions, processQuestionAndOptions, setEdges, setNodes]);
-
-  // Add this to ensure proper layout
-  const layoutElements = {
-    direction: 'LR',
-    nodeSpacing: 100,
-    rankSpacing: 300,
-  };
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -186,12 +204,27 @@ const DecisionTreeFlow = ({ questions }) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         className="bg-[#171717]"
-        defaultEdgeOptions={defaultEdgeOptions}
-        layoutElements={layoutElements}
+        defaultEdgeOptions={{
+          type: 'sinusoidal',
+          style: { 
+            stroke: '#ffffff', 
+            strokeWidth: 1,
+            opacity: 0.8
+          },
+          markerEnd: {
+            type: MarkerType.Arrow,
+            color: '#ffffff',
+          }
+        }}
         minZoom={0.1}
         maxZoom={1.5}
+        fitViewOptions={{ 
+          padding: 0.2,
+          includeHiddenNodes: true
+        }}
       >
         <Background color="#2D2D2D" gap={16} />
         <Controls />

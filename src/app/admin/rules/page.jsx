@@ -85,10 +85,7 @@ const OptionNode = ({ data }) => (
   </div>
 );
 
-const nodeTypes = {
-  question: QuestionNode,
-  option: OptionNode,
-};
+
 
 const RulesPage = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
