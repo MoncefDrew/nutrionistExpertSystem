@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button"
 
 export function HeroSection() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
+    <section className="w-full py-12 md:py-64">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="space-y-4">
@@ -16,7 +16,7 @@ export function HeroSection() {
               management system.
             </p>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link href="/auth/sign-up">
+              <Link href="/auth/client/sign-up">
                 <Button className="bg-green-600 hover:bg-green-700">Get Started</Button>
               </Link>
               <Link href="#features">

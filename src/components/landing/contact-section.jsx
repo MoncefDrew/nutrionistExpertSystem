@@ -20,10 +20,10 @@ export function ContactSection() {
               <span className="font-semibold">(555) 123-4567</span>.
             </p>
             <div className="flex gap-4">
-              <Link href="/auth/sign-up">
+              <Link href="/auth/admin/sign-up">
                 <Button className="bg-green-600 hover:bg-green-700">Sign Up Now</Button>
               </Link>
-              <Link href="/auth/sign-in">
+              <Link href="/auth/admin/sign-in">
                 <Button variant="outline">Sign In</Button>
               </Link>
             </div>
