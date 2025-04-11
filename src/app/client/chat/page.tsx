@@ -38,7 +38,7 @@ export default function ChatScreen() {
 
   useEffect(() => {
     fetchRootQuestion();
-  }, []);
+  }, [fetchRootQuestion]);
 
   const fetchRootQuestion = async () => {
     try {

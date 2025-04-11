@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Coffee, UtensilsCrossed } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -80,16 +80,9 @@ const MealSelection = ({ mealType, searchMeals, searchResults, handleMealSelecti
 
 export function MealPlanForm() {
   const { user } = useAuthStore();
-  
-  // Add a guard clause
-  if (!user) {
-    return <div>Loading...</div>; // or redirect to login
-  }
-
-  const userId = user.id;
   const { register, handleSubmit, setValue, watch } = useForm<MealPlan>({
     defaultValues: {
-      userId,
+      userId: '',  // We'll update this after user check
       planType: 'regular',
       mealsPerDay: 3,
       breakfast: [],
@@ -98,6 +91,7 @@ export function MealPlanForm() {
       snacks: [],
     }
   });
+
   const [searchResults, setSearchResults] = useState<{
     [key: string]: MealOption[];
   }>({
@@ -106,6 +100,7 @@ export function MealPlanForm() {
     dinner: [],
     snacks: []
   });
+
   const [isSearching, setIsSearching] = useState<{
     [key: string]: boolean;
   }>({
@@ -114,6 +109,18 @@ export function MealPlanForm() {
     dinner: false,
     snacks: false
   });
+
+  // Add guard clause after hooks
+  if (!user) {
+    return <div>Loading...</div>; // or redirect to login
+  }
+
+  // Update form values when user is available
+  useEffect(() => {
+    if (user) {
+      setValue('userId', user.id);
+    }
+  }, [user, setValue]);
 
   // Debounced search function
   const searchMeals = debounce(async (query: string, mealType: string) => {
