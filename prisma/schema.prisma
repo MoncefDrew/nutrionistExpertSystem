@@ -17,7 +17,10 @@ model User {
   profilePicture String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  health         Health?
+  mealPlan       MealPlan?
 }
+
 
 enum UserRole {
   client
@@ -42,4 +45,34 @@ model Option {
   next      QuestionNode? @relation(fields: [nextId], references: [id])
   question  QuestionNode @relation("Options", fields: [questionId], references: [id])
   questionId String
+}
+
+model Health {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  age         Int
+  gender      String
+  weight      Float
+  height      Float
+  goal        String
+  activityLevel String
+  dietaryRestrictions String[]
+  allergies   String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MealPlan {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @unique
+  user              User      @relation(fields: [userId], references: [id])
+  planType          String
+  mealsPerDay       Int
+  breakfast         Json      // Use jsonb type for breakfast
+  lunch             Json      // Use jsonb type for lunch
+  dinner            Json      // Use jsonb type for dinner
+  snacks            Json      // Use jsonb type for snacks
+  preferredCuisines String[]   // Ensure this field is present
+
 }
