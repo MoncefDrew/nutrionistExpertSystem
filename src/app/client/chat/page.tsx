@@ -36,9 +36,7 @@ export default function ChatScreen() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    fetchRootQuestion();
-  }, [fetchRootQuestion]);
+ 
 
   const fetchRootQuestion = async () => {
     try {
@@ -61,7 +59,9 @@ export default function ChatScreen() {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    fetchRootQuestion();
+  }, [fetchRootQuestion]);
   const handleOptionClick = async (option: Option) => {
     if (!currentQuestion) return;
 
