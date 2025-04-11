@@ -115,12 +115,7 @@ export function MealPlanForm() {
     return <div>Loading...</div>; // or redirect to login
   }
 
-  // Update form values when user is available
-  useEffect(() => {
-   
-      setValue('userId', user.id);
-    
-  }, [user, setValue]);
+  
 
   // Debounced search function
   const searchMeals = debounce(async (query: string, mealType: string) => {
