@@ -117,9 +117,9 @@ export function MealPlanForm() {
 
   // Update form values when user is available
   useEffect(() => {
-    if (user) {
+   
       setValue('userId', user.id);
-    }
+    
   }, [user, setValue]);
 
   // Debounced search function
@@ -175,11 +175,6 @@ export function MealPlanForm() {
     }
   };
 
-  // Add type safety to the meal type checking
-  const getMealArray = (mealType: keyof Pick<MealPlan, 'breakfast' | 'lunch' | 'dinner' | 'snacks'>) => {
-    const meals = watch(mealType);
-    return Array.isArray(meals) ? meals : [];
-  };
 
   return (
     <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-8 border border-zinc-800">
