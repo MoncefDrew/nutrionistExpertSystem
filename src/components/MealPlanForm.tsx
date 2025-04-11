@@ -80,6 +80,12 @@ const MealSelection = ({ mealType, searchMeals, searchResults, handleMealSelecti
 
 export function MealPlanForm() {
   const { user } = useAuthStore();
+  
+  // Add a guard clause
+  if (!user) {
+    return <div>Loading...</div>; // or redirect to login
+  }
+
   const userId = user.id;
   const { register, handleSubmit, setValue, watch } = useForm<MealPlan>({
     defaultValues: {
