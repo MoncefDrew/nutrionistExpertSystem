@@ -1,11 +1,9 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { HealthForm } from '../../../components/HealthForm';
 import { MealPlanForm } from '../../../components/MealPlanForm';
-
-export const dynamic = 'force-dynamic'
 
 export default function PreferencesPage() {
   const [loading, setLoading] = useState(false);
@@ -51,9 +49,7 @@ export default function PreferencesPage() {
             loading={loading}
           />
           
-          <Suspense fallback={<div>Loading...</div>}>
-            <MealPlanForm />
-          </Suspense>
+          <MealPlanForm />
         </div>
       </div>
     </div>

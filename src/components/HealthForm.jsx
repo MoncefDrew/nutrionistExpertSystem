@@ -124,10 +124,6 @@ export function HealthForm({ onSubmit, initialData, loading }) {
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchHealthData();
-  }, [fetchHealthData]);
-
   return (
     <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl py-4 px-8 border border-zinc-800">
       {/* Stats Cards */}

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Coffee, UtensilsCrossed } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import debounce from 'lodash/debounce';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -80,9 +80,10 @@ const MealSelection = ({ mealType, searchMeals, searchResults, handleMealSelecti
 
 export function MealPlanForm() {
   const { user } = useAuthStore();
+  const userId = user.id;
   const { register, handleSubmit, setValue, watch } = useForm<MealPlan>({
     defaultValues: {
-      userId: '',  // We'll update this after user check
+      userId,
       planType: 'regular',
       mealsPerDay: 3,
       breakfast: [],
@@ -91,7 +92,6 @@ export function MealPlanForm() {
       snacks: [],
     }
   });
-
   const [searchResults, setSearchResults] = useState<{
     [key: string]: MealOption[];
   }>({
@@ -100,7 +100,6 @@ export function MealPlanForm() {
     dinner: [],
     snacks: []
   });
-
   const [isSearching, setIsSearching] = useState<{
     [key: string]: boolean;
   }>({
@@ -109,13 +108,6 @@ export function MealPlanForm() {
     dinner: false,
     snacks: false
   });
-
-  // Add guard clause after hooks
-  if (!user) {
-    return <div>Loading...</div>; // or redirect to login
-  }
-
-  
 
   // Debounced search function
   const searchMeals = debounce(async (query: string, mealType: string) => {
@@ -170,6 +162,11 @@ export function MealPlanForm() {
     }
   };
 
+  // Add type safety to the meal type checking
+  const getMealArray = (mealType: keyof Pick<MealPlan, 'breakfast' | 'lunch' | 'dinner' | 'snacks'>) => {
+    const meals = watch(mealType);
+    return Array.isArray(meals) ? meals : [];
+  };
 
   return (
     <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-8 border border-zinc-800">

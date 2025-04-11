@@ -35,8 +35,8 @@ export default function ChatContainer() {
     handleStartChat();
   }, [handleStartChat]);
 
-  const updateChatInterface = useCallback((newMessage) => {
-    const node = decisionTree[newMessage];
+  const updateChatInterface = (nodeId) => {
+    const node = decisionTree[nodeId];
     if (node) {
       // Update chat interface with new question and options
       setChatMessages(prev => [...prev, {
@@ -45,7 +45,7 @@ export default function ChatContainer() {
       }]);
       setCurrentOptions(node.options);
     }
-  }, [decisionTree]);
+  };
 
   const handleAnswerSelected = (answer) => {
     const node = decisionTree[currentNode];
