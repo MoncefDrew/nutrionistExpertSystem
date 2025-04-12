@@ -5,13 +5,13 @@ import { ChatMessage } from "./ChatMessage";
 import { useExpertSession } from "../store/useExpertSession";
 import { SendHorizonal, Mic } from "lucide-react";
 import { generateReply } from "./InferenceEngine";
+import { useHealthStore } from "../store/useHealthStore";
 
 export function Chat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<
     { message: string; isUser?: boolean }[]
   >([]);
-  const { healthDetails } = useExpertSession();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function Chat() {
     setInput("");
 
     setTimeout(() => {
-      const reply = generateReply(input, healthDetails);
+      const reply = generateReply(input);
       setMessages([...newMessages, { message: reply }]);
     }, 500);
   };

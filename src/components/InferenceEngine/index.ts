@@ -1,28 +1,25 @@
 // inferenceEngine.ts
 import { useHealthStore } from "../../store/useHealthStore";
+import { UserProfileSetup } from "./modules/UserProfileSetup";
 
-// Optionally re-use Health type
-export interface HealthDetails {
-  conditions?: string[]; // If you want to simulate conditions like "diabetes"
-  age?: number;
-  weight?: number;
-  height?: number;
-  gender?: string;
-  goal?: string;
-  activityLevel?: string;
-  allergies?: string[];
-  dietaryRestrictions?: string[];
-}
 
 // Core inference function
-export function generateReply(input: string): string {
+export function generateReply(input: string) {
   const { healthData } = useHealthStore.getState();
   const lowerInput = input.toLowerCase();
+  const height = healthData.height
+  const weight = healthData.weight
+  const age = healthData.age
+  const goal = healthData.goal
+  const activityLevel = healthData.activityLevel
+
+
 
   if (!healthData) {
     return "I need more information about your health to provide accurate guidance. Please complete your health profile.";
-  }
+  }else{
 
+  //test
   if (lowerInput.includes("diet")) {
     // Simulated condition: check for diabetes in dietaryRestrictions
     const isDiabetic = healthData.dietaryRestrictions?.includes("diabetes");
@@ -46,11 +43,24 @@ export function generateReply(input: string): string {
     );
   }
 
+
+  //"• User Profile Setup 
+    // user inputs
+  if(age && height && weight && goal && activityLevel && lowerInput.includes("user profile setup")){
+    return UserProfileSetup(healthData)
+  }
+
+
+
   return (
-    "I'm here to help with your nutrition questions. You can ask me about:\n\n" +
-    "• Meal planning\n" +
-    "• Dietary restrictions\n" +
-    "• Supplement advice\n" +
-    "• Managing health conditions through diet"
-  );
+    "I'm here to help with your nutrition questions. What Scenario are you choosing :\n\n" +
+    "• User Profile Setup \n" +
+    "• Personalized Meal Plan Recommendation\n" +
+    "• Meal Evaluation (Food Suitability Check)\n" +
+    "• Nutritional Information Lookup\n" +
+    "• Diet Compatibility Check\n" +
+    "• Meal Substitutions\n" +
+    "• Recipe Suggestions\n" 
+
+  )};
 }

@@ -1,7 +1,7 @@
 // useHealthState.ts
 import { create } from 'zustand'
 
-export interface Health {
+export interface healthDataType {
   age: number
   gender: string
   weight: number
