@@ -117,9 +117,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
 
   // Add useEffect to fetch data on mount
   useEffect(() => {
-    if (user?.id) {
       fetchHealthData();
-    }
   }, [user]);
 
   return (

@@ -81,14 +81,7 @@ const MealSelection = ({ mealType, searchMeals, searchResults, handleMealSelecti
 export function MealPlanForm() {
   const { user } = useAuthStore();
   
-  // Add loading state
-  if (!user) {
-    return (
-      <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-8 border border-zinc-800">
-        <p className="text-white">Loading...</p>
-      </div>
-    );
-  }
+  
 
   const { register, handleSubmit, setValue, watch } = useForm<MealPlan>({
     defaultValues: {
