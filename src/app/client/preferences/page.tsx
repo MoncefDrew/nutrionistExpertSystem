@@ -6,6 +6,7 @@ import { HealthForm } from '../../../components/HealthForm';
 import dynamic from 'next/dynamic';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useMealsStore } from '../../../store/useMealsStore';
+import { useRouter } from 'next/navigation';
 
 // Import MealPlanForm with no SSR
 const MealPlanForm = dynamic(
@@ -45,7 +46,9 @@ export default function PreferencesPage() {
     }
   };
 
+  const router = useRouter()
   const handleHealthSubmit = async (data) => {
+
     setLoading(true);
     try {
       // Determine if we're creating or updating based on existing data
@@ -58,6 +61,7 @@ export default function PreferencesPage() {
         'Health information updated successfully' : 
         'Health information created successfully'
       );
+      router.push('/client/chat')
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(

@@ -37,7 +37,7 @@ const SignInPage = () => {
       if (data.user.role === 'nutritionist') {
         router.push('/admin/chat');
       } else {
-        router.push('/client/chat');
+        router.push('/client/preferences');
       }
     },
     onError: (error) => {

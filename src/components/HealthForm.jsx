@@ -93,6 +93,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
       }
 
       toast.success("Health information saved successfully");
+      router.push('/client/chat')
     } catch (error) {
       toast.error("Failed to save health information");
       console.error(error);
