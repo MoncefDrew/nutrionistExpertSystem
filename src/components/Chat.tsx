@@ -25,8 +25,8 @@ export function Chat() {
     setMessages(newMessages);
     setInput("");
 
-    setTimeout(() => {
-      const reply = generateReply(input);
+    setTimeout(async () => {
+      const reply = await generateReply(input);
       setMessages([...newMessages, { message: reply }]);
     }, 500);
   };

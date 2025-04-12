@@ -7,9 +7,13 @@ import { parseStringPromise } from 'xml2js';
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const query = url.searchParams.get('query');
-    const mealType = url.searchParams.get('mealType');
-    const planType = url.searchParams.get('planType');
+    const query = url.searchParams.get('query'); // User input (e.g., "high-protein breakfast")
+    const healthGoal = url.searchParams.get('healthGoal'); // Health goal like "high-protein"
+
+    // Ensure valid input
+    if (!query) {
+      return NextResponse.json({ error: 'Query parameter is required.' }, { status: 400 });
+    }
 
     // Configure OAuth
     const oauth = new OAuth({
@@ -24,23 +28,13 @@ export async function GET(request: Request) {
     });
 
     // Prepare the request parameters
-    let searchExpression = query;
-    
-    // If `mealType` or `planType` is provided, modify the search query
-    if (mealType) {
-      searchExpression += ` ${mealType}`;
-    }
-    if (planType) {
-      searchExpression += ` ${planType}`;
-    }
-
     const requestData = {
       url: 'https://platform.fatsecret.com/rest/server.api',
       method: 'GET',
       data: {
         method: 'recipes.search',
-        search_expression: searchExpression,
-        max_results: 10,
+        search_expression: query,
+        max_results: 1,
       },
     };
 
@@ -68,17 +62,20 @@ export async function GET(request: Request) {
     const recipes = parsedData.recipes.recipe.map((recipe: any) => ({
       id: recipe.recipe_id[0],
       name: recipe.recipe_name[0],
-      description: recipe.recipe_description[0],
-      ingredients: recipe.recipe_ingredients[0],
-      instructions: recipe.recipe_instructions[0],
-      nutritionInfo: {
-        calories: parseFloat(recipe.recipe_nutrition[0]?.match(/Calories: (\d+)kcal/)?.[1] || '0'),
-        protein: parseFloat(recipe.recipe_nutrition[0]?.match(/Protein: (\d+)g/)?.[1] || '0'),
-        carbs: parseFloat(recipe.recipe_nutrition[0]?.match(/Carbs: (\d+)g/)?.[1] || '0'),
-        fat: parseFloat(recipe.recipe_nutrition[0]?.match(/Fat: (\d+)g/)?.[1] || '0'),
+      description: recipe.recipe_description[0] || 'No description available.',
+      ingredients: recipe.ingredients[0].ingredient,
+      preparationTime: recipe.preparation_time[0] || 'Unknown',
+      cookingTime: recipe.cooking_time[0] || 'Unknown',
+      url: recipe.recipe_url[0],
+      nutrition: {
+        calories: parseFloat(recipe.recipe_description[0].match(/Calories: (\d+)kcal/)?.[1] || '0'),
+        protein: parseFloat(recipe.recipe_description[0].match(/Protein: (\d+)g/)?.[1] || '0'),
+        carbs: parseFloat(recipe.recipe_description[0].match(/Carbs: (\d+)g/)?.[1] || '0'),
+        fat: parseFloat(recipe.recipe_description[0].match(/Fat: (\d+)g/)?.[1] || '0'),
       },
     }));
 
+    // Return the recipe(s) as a response
     return NextResponse.json({ recipes });
   } catch (error) {
     console.error('Recipe search error:', error);

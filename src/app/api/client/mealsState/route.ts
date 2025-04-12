@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
+// Handle POST request for creating or updating meal plan
 export async function POST(request: Request) {
   const data = await request.json();
 
@@ -59,4 +60,38 @@ export async function POST(request: Request) {
   }
 }
 
+// Handle GET request to fetch meal plan data for a specific user
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
 
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
+  try {
+    // Fetch meal plan for the user
+    const mealPlan = await prisma.mealPlan.findUnique({
+      where: { userId: parseInt(userId) },
+      select: {
+        id: true,
+        userId: true,
+        planType: true,
+        mealsPerDay: true,
+        breakfast: true,
+        lunch: true,
+        dinner: true,
+        snacks: true,
+      },
+    });
+
+    if (!mealPlan) {
+      return NextResponse.json({ error: 'No meal plan found for this user' }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: mealPlan });
+  } catch (error) {
+    console.error('Error fetching meal plan:', error);
+    return NextResponse.json({ error: 'Failed to fetch meal plan' }, { status: 500 });
+  }
+}

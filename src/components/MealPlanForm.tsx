@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import debounce from 'lodash/debounce';
 import { useAuthStore } from '../store/useAuthStore';
+import { useMealsStore } from '../store/useMealsStore';
+import { MealSelection } from './MealSelection';
 
 interface MealOption {
   id: string;
@@ -21,79 +23,36 @@ interface MealOption {
 
 interface MealPlan {
   userId: string;
-  planType: 'regular' | 'vegetarian' | 'vegan' | 'keto' | 'paleo';
+  planType: "" | 'regular' | 'vegetarian' | 'vegan' | 'keto' | 'paleo' ;
   mealsPerDay: number;
   breakfast: MealOption[];
   lunch: MealOption[];
   dinner: MealOption[];
   snacks: MealOption[];
-  
+}
+
+interface MealPlanFormProps {
+  initialMealPlan: MealPlan;
 }
 
 
 
-const MealSelection = ({ mealType, searchMeals, searchResults, handleMealSelection, removeMeal, watch }) => (
-  <div className="mb-6">
-    <label className="text-sm font-medium text-zinc-300 capitalize">{mealType} Options</label>
-    <div className="relative">
-      <input
-        type="text"
-        onChange={(e) => searchMeals(e.target.value, mealType)}
-        placeholder={`Search for ${mealType} options...`}
-        className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-      />
-      {searchResults[mealType]?.length > 0 && (
-        <div className="absolute z-10 w-full mt-1 bg-zinc-800 rounded-lg border border-zinc-700 max-h-60 overflow-auto">
-          {searchResults[mealType].map((meal) => (
-            <button
-              key={meal.id}
-              type="button"
-              onClick={() => handleMealSelection(meal, mealType)}
-              className="w-full p-3 text-left hover:bg-zinc-700 text-gray-300"
-            >
-              <div className="font-medium">{meal.name}</div>
-              <div className="text-sm text-gray-400">
-                {meal.nutritionInfo.calories} cal | P: {meal.nutritionInfo.protein}g | 
-                C: {meal.nutritionInfo.carbs}g | F: {meal.nutritionInfo.fat}g
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-    <div className="mt-2 space-y-2">
-      {watch(mealType).map((meal: MealOption) => (
-        <div key={meal.id} className="flex items-center justify-between p-2 bg-zinc-800/50 rounded-lg">
-          <span className="text-gray-300">{meal.name}</span>
-          <button
-            type="button"
-            onClick={() => removeMeal(meal.id, mealType)}
-            className="text-red-500 hover:text-red-400"
-          >
-            Remove
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-export function MealPlanForm() {
+export function MealPlanForm({ initialMealPlan }: MealPlanFormProps) {
   const { user } = useAuthStore();
-  
-  
+  const { mealPlan, setMealPlan } = useMealsStore();
 
   const { register, handleSubmit, setValue, watch } = useForm<MealPlan>({
     defaultValues: {
       userId: user.id,
-      planType: 'regular',
-      mealsPerDay: 3,
-      breakfast: [],
-      lunch: [],
-      dinner: [],
-      snacks: [],
+      planType: initialMealPlan.planType || "",
+      mealsPerDay: initialMealPlan.mealsPerDay || 3,
+      breakfast: initialMealPlan.breakfast || [],
+      lunch: initialMealPlan.lunch || [],
+      dinner: initialMealPlan.dinner || [],
+      snacks: initialMealPlan.snacks || [],
     }
   });
+
   const [searchResults, setSearchResults] = useState<{
     [key: string]: MealOption[];
   }>({
@@ -165,12 +124,6 @@ export function MealPlanForm() {
     }
   };
 
-  // Add type safety to the meal type checking
-  const getMealArray = (mealType: keyof Pick<MealPlan, 'breakfast' | 'lunch' | 'dinner' | 'snacks'>) => {
-    const meals = watch(mealType);
-    return Array.isArray(meals) ? meals : [];
-  };
-
   return (
     <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-4 border border-zinc-800 max-w-md mx-auto">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -179,11 +132,7 @@ export function MealPlanForm() {
             <Coffee className="w-5 h-5" />
             Meal Plan Preferences
           </h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              
-            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-300">Plan Type</label>
               <select
@@ -240,4 +189,4 @@ export function MealPlanForm() {
       </form>
     </div>
   );
-} 
+}
