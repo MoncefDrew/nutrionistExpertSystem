@@ -82,11 +82,9 @@ export function HealthForm({ onSubmit, initialData, loading }) {
         throw new Error('User ID mismatch - Security check failed');
       }
 
-      console.log('Health data saved successfully:', response.data);
-      router.push('/chat');
+      router.push('/client/chat');
       
     } catch (error) {
-      console.error('Form submission error:', error.response?.data?.error || error.message);
       throw error;
     }
   };

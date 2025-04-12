@@ -3,7 +3,13 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { HealthForm } from '../../../components/HealthForm';
-import { MealPlanForm } from '../../../components/MealPlanForm';
+import dynamic from 'next/dynamic'
+
+// Import MealPlanForm with no SSR
+const MealPlanForm = dynamic(
+  () => import('../../../components/MealPlanForm').then(mod => mod.MealPlanForm),
+  { ssr: false }
+)
 
 export default function PreferencesPage() {
   const [loading, setLoading] = useState(false);
