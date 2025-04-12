@@ -24,22 +24,12 @@ export async function GET(request: Request) {
     });
 
     // Prepare the request parameters
-    let searchExpression = query;
-    
-    // If `mealType` or `planType` is provided, modify the search query
-    if (mealType) {
-      searchExpression += ` ${mealType}`;
-    }
-    if (planType) {
-      searchExpression += ` ${planType}`;
-    }
-
     const requestData = {
       url: 'https://platform.fatsecret.com/rest/server.api',
       method: 'GET',
       data: {
-        method: 'recipes.search',
-        search_expression: searchExpression,
+        method: 'foods.search',
+        search_expression: query,
         max_results: 10,
       },
     };
@@ -60,31 +50,29 @@ export async function GET(request: Request) {
     const parsedData = await parseStringPromise(response.data);
 
     // Check if the response structure is valid
-    if (!parsedData || !parsedData.recipes || !parsedData.recipes.recipe) {
-      return NextResponse.json({ recipes: [] }); // Return an empty array if no recipes found
+    if (!parsedData || !parsedData.foods || !parsedData.foods.food) {
+      return NextResponse.json({ meals: [] }); // Return an empty array if no meals found
     }
 
     // Transform FatSecret response to your app's format
-    const recipes = parsedData.recipes.recipe.map((recipe: any) => ({
-      id: recipe.recipe_id[0],
-      name: recipe.recipe_name[0],
-      description: recipe.recipe_description[0],
-      ingredients: recipe.recipe_ingredients[0],
-      instructions: recipe.recipe_instructions[0],
+    const meals = parsedData.foods.food.map((food: any) => ({
+      id: food.food_id[0],
+      name: food.food_name[0],
+      description: food.food_description[0],
       nutritionInfo: {
-        calories: parseFloat(recipe.recipe_nutrition[0]?.match(/Calories: (\d+)kcal/)?.[1] || '0'),
-        protein: parseFloat(recipe.recipe_nutrition[0]?.match(/Protein: (\d+)g/)?.[1] || '0'),
-        carbs: parseFloat(recipe.recipe_nutrition[0]?.match(/Carbs: (\d+)g/)?.[1] || '0'),
-        fat: parseFloat(recipe.recipe_nutrition[0]?.match(/Fat: (\d+)g/)?.[1] || '0'),
-      },
+        calories: parseFloat(food.food_description[0].match(/Calories: (\d+)kcal/)?.[1] || '0'),
+        protein: parseFloat(food.food_description[0].match(/Protein: (\d+)g/)?.[1] || '0'),
+        carbs: parseFloat(food.food_description[0].match(/Carbs: (\d+)g/)?.[1] || '0'),
+        fat: parseFloat(food.food_description[0].match(/Fat: (\d+)g/)?.[1] || '0'),
+      }
     }));
 
-    return NextResponse.json({ recipes });
+    return NextResponse.json({ meals });
   } catch (error) {
-    console.error('Recipe search error:', error);
+    console.error('Meal search error:', error);
     return NextResponse.json(
-      { error: 'Failed to search recipes' },
+      { error: 'Failed to search meals' },
       { status: 500 }
     );
   }
-}
+} 
