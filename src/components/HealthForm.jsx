@@ -1,11 +1,12 @@
-'use client';
-'use client';
-import { useForm } from 'react-hook-form';
-import { Activity, Scale, Ruler, Target, Apple, User2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '../store/useAuthStore';
-import axios from 'axios';
+"use client";
+import { useForm } from "react-hook-form";
+import { Activity, Scale, Ruler, Target, Apple, User2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "../store/useAuthStore";
+import axios from "axios";
+import { toast } from "sonner";
+import { useHealthStore } from "../store/useHealthStore";
 
 // ... keep the HealthForm interface ...
 
@@ -16,19 +17,19 @@ export function HealthForm({ onSubmit, initialData, loading }) {
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
-      age: '',
-      gender: 'male',
-      weight: '',
-      height: '',
-      goal: 'maintain',
-      activityLevel: 'moderate',
-      dietaryRestrictions: '',
-      allergies: '',
-    }
+      age: "",
+      gender: "male",
+      weight: "",
+      height: "",
+      goal: "maintain",
+      activityLevel: "moderate",
+      dietaryRestrictions: "",
+      allergies: "",
+    },
   });
 
-  const weight = watch('weight');
-  const height = watch('height');
+  const weight = watch("weight");
+  const height = watch("height");
   const [bmi, setBmi] = useState(null);
 
   // Calculate BMI when weight or height changes
@@ -50,16 +51,16 @@ export function HealthForm({ onSubmit, initialData, loading }) {
   }, [initialData, setValue]);
 
   const getBmiCategory = (bmi) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'text-blue-500' };
-    if (bmi < 25) return { label: 'Normal', color: 'text-green-500' };
-    if (bmi < 30) return { label: 'Overweight', color: 'text-yellow-500' };
-    return { label: 'Obese', color: 'text-red-500' };
+    if (bmi < 18.5) return { label: "Underweight", color: "text-blue-500" };
+    if (bmi < 25) return { label: "Normal", color: "text-green-500" };
+    if (bmi < 30) return { label: "Overweight", color: "text-yellow-500" };
+    return { label: "Obese", color: "text-red-500" };
   };
 
   const handleSubmitting = async (data) => {
     try {
       if (!user) {
-        throw new Error('You must be logged in to submit health data');
+        throw new Error("You must be logged in to submit health data");
       }
 
       const formattedData = {
@@ -67,49 +68,62 @@ export function HealthForm({ onSubmit, initialData, loading }) {
         age: parseInt(data.age),
         weight: parseFloat(data.weight),
         height: parseFloat(data.height),
-        dietaryRestrictions: data.dietaryRestrictions ? 
-          data.dietaryRestrictions.split(',').map(item => item.trim()).filter(Boolean) : 
-          [],
-        allergies: data.allergies ? 
-          data.allergies.split(',').map(item => item.trim()).filter(Boolean) : 
-          [],
-        userId: user.id
+        dietaryRestrictions: data.dietaryRestrictions
+          ? data.dietaryRestrictions
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
+        allergies: data.allergies
+          ? data.allergies
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
+        userId: user.id,
       };
 
-      const response = await axios.post('/api/client/health/create', formattedData);
-      
+      const response = await axios.post(
+        "/api/client/health/create",
+        formattedData
+      );
+
       if (response.data.data.userId !== user.id) {
-        throw new Error('User ID mismatch - Security check failed');
+        throw new Error("User ID mismatch - Security check failed");
       }
 
-      router.push('/client/chat');
-      
+      toast.success("Health information saved successfully");
     } catch (error) {
-      throw error;
+      toast.error("Failed to save health information");
+      console.error(error);
     }
   };
 
   // Add fetchHealthData function
+  const { setHealthData } = useHealthStore();
+
   const fetchHealthData = async () => {
     try {
       setIsLoading(true);
       const response = await axios.get(`/api/client/health?userId=${user.id}`);
       const healthData = response.data.data;
-      
+
       if (healthData) {
-        // Format arrays back to comma-separated strings
+        // Save to global store
+        setHealthData(healthData);
+
         const formattedData = {
           ...healthData,
-          dietaryRestrictions: healthData.dietaryRestrictions?.join(', ') || '',
-          allergies: healthData.allergies?.join(', ') || ''
+          dietaryRestrictions: healthData.dietaryRestrictions?.join(", ") || "",
+          allergies: healthData.allergies?.join(", ") || "",
         };
-        
+
         Object.keys(formattedData).forEach((key) => {
           setValue(key, formattedData[key]);
         });
       }
     } catch (error) {
-      console.error('Error fetching health data:', error);
+      console.error("Error fetching health data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -117,62 +131,66 @@ export function HealthForm({ onSubmit, initialData, loading }) {
 
   // Add useEffect to fetch data on mount
   useEffect(() => {
-      fetchHealthData();
+    fetchHealthData();
   }, [user]);
 
   return (
-    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl py-4 px-8 border border-zinc-800">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {bmi && (
-          <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Activity className="w-6 h-6 text-blue-500" />
+    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl py-2 px-4 border border-zinc-800 max-w-md mx-auto">
+      <form onSubmit={handleSubmit(handleSubmitting)} className="space-y-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          {bmi && (
+            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <Activity className="w-6 h-6 text-blue-500" />
+                </div>
+                <span
+                  className={`text-sm font-medium ${getBmiCategory(bmi).color}`}
+                >
+                  {getBmiCategory(bmi).label}
+                </span>
               </div>
-              <span className={`text-sm font-medium ${getBmiCategory(bmi).color}`}>
-                {getBmiCategory(bmi).label}
-              </span>
+              <p className="text-2xl font-bold text-white mb-1">{bmi}</p>
+              <p className="text-sm text-zinc-400">Body Mass Index</p>
             </div>
-            <p className="text-2xl font-bold text-white mb-1">{bmi}</p>
-            <p className="text-sm text-zinc-400">Body Mass Index</p>
-          </div>
-        )}
-        
-        {weight && (
-          <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <Scale className="w-6 h-6 text-emerald-500" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-white mb-1">{weight} kg</p>
-            <p className="text-sm text-zinc-400">Current Weight</p>
-          </div>
-        )}
-      </div>
+          )}
 
-      <form onSubmit={handleSubmit(handleSubmitting)} className="space-y-8">
+          {weight && (
+            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-emerald-500/10 rounded-lg">
+                  <Scale className="w-6 h-6 text-emerald-500" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">{weight} kg</p>
+              <p className="text-sm text-zinc-400">Current Weight</p>
+            </div>
+          )}
+        </div>
+
         {/* Basic Information */}
         <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <User2 className="w-5 h-5" />
             Basic Information
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-300">Age</label>
               <input
                 type="number"
-                {...register('age')}
+                {...register("age")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Gender</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Gender
+              </label>
               <select
-                {...register('gender')}
+                {...register("gender")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
               >
                 <option value="male">Male</option>
@@ -191,19 +209,23 @@ export function HealthForm({ onSubmit, initialData, loading }) {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Weight (kg)</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Weight (kg)
+              </label>
               <input
                 type="number"
                 step="0.1"
-                {...register('weight')}
+                {...register("weight")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Height (cm)</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Height (cm)
+              </label>
               <input
                 type="number"
-                {...register('height')}
+                {...register("height")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
               />
             </div>
@@ -220,7 +242,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-300">Goal</label>
               <select
-                {...register('goal')}
+                {...register("goal")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
               >
                 <option value="lose_weight">Lose Weight</option>
@@ -229,9 +251,11 @@ export function HealthForm({ onSubmit, initialData, loading }) {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Activity Level</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Activity Level
+              </label>
               <select
-                {...register('activityLevel')}
+                {...register("activityLevel")}
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
               >
                 <option value="sedentary">Sedentary</option>
@@ -251,19 +275,23 @@ export function HealthForm({ onSubmit, initialData, loading }) {
           </h2>
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Dietary Restrictions</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Dietary Restrictions
+              </label>
               <input
                 type="text"
-                {...register('dietaryRestrictions')}
+                {...register("dietaryRestrictions")}
                 placeholder="E.g., vegetarian, vegan, gluten-free (separate with commas)"
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Allergies</label>
+              <label className="text-sm font-medium text-zinc-300">
+                Allergies
+              </label>
               <input
                 type="text"
-                {...register('allergies')}
+                {...register("allergies")}
                 placeholder="E.g., nuts, dairy, shellfish (separate with commas)"
                 className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
               />
@@ -274,11 +302,11 @@ export function HealthForm({ onSubmit, initialData, loading }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
         >
-          {isLoading ? 'Saving Changes...' : 'Save Changes'}
+          {isLoading ? "Saving Changes..." : "Save Changes"}
         </button>
       </form>
     </div>
   );
-} 
+}

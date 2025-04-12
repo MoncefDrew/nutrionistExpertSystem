@@ -161,6 +161,7 @@ export function MealPlanForm() {
       toast.success('Meal plan preferences saved successfully');
     } catch (error) {
       toast.error('Failed to save meal plan preferences');
+      console.error(error);
     }
   };
 
@@ -171,15 +172,15 @@ export function MealPlanForm() {
   };
 
   return (
-    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-8 border border-zinc-800">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-4 border border-zinc-800 max-w-md mx-auto">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Coffee className="w-5 h-5" />
             Meal Plan Preferences
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               
             </div>
@@ -212,7 +213,7 @@ export function MealPlanForm() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <UtensilsCrossed className="w-5 h-5" />
             Meal Selections
           </h2>
@@ -232,7 +233,7 @@ export function MealPlanForm() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
         >
           Save Meal Plan
         </button>

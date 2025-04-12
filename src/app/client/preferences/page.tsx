@@ -42,13 +42,13 @@ export default function PreferencesPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      <div className="max-w-full gap-8 flex flex-col md:flex-row mx-auto px-12 py-8">
-        <div className="mb-8">
+      <div className="max-w-full gap-8 flex flex-col md:flex-row mx-auto px-4 py-4">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold text-white mb-2">Health & Nutrition Preferences</h1>
           <p className="text-zinc-400">Manage your health information and meal preferences</p>
         </div>
 
-        <div className="space-y-8 gap-4 flex flex-col md:flex-row">
+        <div className="space-y-4 gap-4 flex flex-col md:flex-row">
           <HealthForm 
             onSubmit={handleHealthSubmit}
             initialData={healthData}

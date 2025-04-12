@@ -20,7 +20,7 @@ export function AuthHeader() {
   const links = userType ? navigation[userType] : [];
 
   return (
-    <div className="absolute bg-[#171717] top-0 left-0 right-0 p-4 flex items-center justify-between">
+    <div  className="flex-shrink-0 absolute bg-[#171717] top-0 left-0 right-0 p-4 flex items-center justify-between">
       <Link href="/" className="flex items-center gap-2">
         <Leaf className="h-6 w-6 text-green-600" />
         <span className="font-bold text-gray-100">NutriExpert</span>
