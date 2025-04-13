@@ -181,7 +181,7 @@ export default function PreferencesPage() {
                 <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 backdrop-blur-lg rounded-2xl border border-blue-500/20 shadow-xl p-6 mb-6">
                   <h3 className="text-xl font-semibold text-white mb-3">Why This Matters</h3>
                   <p className="text-zinc-300 mb-4">
-                    Your health data helps us provide personalized nutrition advice that's tailored to your specific needs and goals.
+                    Your health data helps us provide personalized nutrition advice thats tailored to your specific needs and goals.
                   </p>
                   <ul className="space-y-3">
                     {[
