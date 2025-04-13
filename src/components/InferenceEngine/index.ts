@@ -42,6 +42,7 @@ const rules: Rule[] = [
         input.includes("plan my meals") ||
         input.includes("what should i eat")) &&
       healthData !== null,
+      //@ts-ignore
     action: (_, healthData) => PersonalizedMealPlan(healthData!),
   },
 
@@ -139,6 +140,10 @@ export async function generateReply(input: string): Promise<string> {
     if (rule.condition(lowerInput, healthData)) {
       return rule.action(lowerInput, healthData);
     }
+  }
+
+  if(!healthData){
+    return "Please fill out your form"
   }
 
   return (

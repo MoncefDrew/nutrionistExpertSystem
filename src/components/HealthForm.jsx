@@ -1,6 +1,9 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { Activity, Scale, Ruler, Target, Apple, User2 } from "lucide-react";
+import { 
+  Activity, Scale, Ruler, Target, Apple, User2, 
+  Heart, Zap, AlertCircle, ChevronDown, Info, Dumbbell
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/useAuthStore";
@@ -8,12 +11,11 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useHealthStore } from "../store/useHealthStore";
 
-// ... keep the HealthForm interface ...
-
 export function HealthForm({ onSubmit, initialData, loading }) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(loading);
+  const [openSection, setOpenSection] = useState("basic");
+  const { setHealthData } = useHealthStore();
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -32,7 +34,6 @@ export function HealthForm({ onSubmit, initialData, loading }) {
   const height = watch("height");
   const [bmi, setBmi] = useState(null);
 
-  // Calculate BMI when weight or height changes
   useEffect(() => {
     if (weight && height) {
       const heightInMeters = height / 100;
@@ -41,7 +42,6 @@ export function HealthForm({ onSubmit, initialData, loading }) {
     }
   }, [weight, height]);
 
-  // Set initial data if provided
   useEffect(() => {
     if (initialData) {
       Object.keys(initialData).forEach((key) => {
@@ -50,11 +50,17 @@ export function HealthForm({ onSubmit, initialData, loading }) {
     }
   }, [initialData, setValue]);
 
+  useEffect(() => {
+    if (user?.id) {
+      fetchHealthData();
+    }
+  }, [user]);
+
   const getBmiCategory = (bmi) => {
-    if (bmi < 18.5) return { label: "Underweight", color: "text-blue-500" };
-    if (bmi < 25) return { label: "Normal", color: "text-green-500" };
-    if (bmi < 30) return { label: "Overweight", color: "text-yellow-500" };
-    return { label: "Obese", color: "text-red-500" };
+    if (bmi < 18.5) return { label: "Underweight", color: "text-blue-500", bg: "bg-blue-500/10" };
+    if (bmi < 25) return { label: "Normal", color: "text-green-500", bg: "bg-green-500/10" };
+    if (bmi < 30) return { label: "Overweight", color: "text-yellow-500", bg: "bg-yellow-500/10" };
+    return { label: "Obese", color: "text-red-500", bg: "bg-red-500/10" };
   };
 
   const handleSubmitting = async (data) => {
@@ -69,39 +75,27 @@ export function HealthForm({ onSubmit, initialData, loading }) {
         weight: parseFloat(data.weight),
         height: parseFloat(data.height),
         dietaryRestrictions: data.dietaryRestrictions
-          ? data.dietaryRestrictions
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean)
+          ? data.dietaryRestrictions.split(",").map((item) => item.trim()).filter(Boolean)
           : [],
         allergies: data.allergies
-          ? data.allergies
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean)
+          ? data.allergies.split(",").map((item) => item.trim()).filter(Boolean)
           : [],
         userId: user.id,
       };
 
-      const response = await axios.post(
-        "/api/client/health/create",
-        formattedData
-      );
+      const response = await axios.post("/api/client/health/create", formattedData);
 
       if (response.data.data.userId !== user.id) {
         throw new Error("User ID mismatch - Security check failed");
       }
 
       toast.success("Health information saved successfully");
-      router.push('/client/chat')
+      
     } catch (error) {
       toast.error("Failed to save health information");
       console.error(error);
     }
   };
-
-  // Add fetchHealthData function
-  const { setHealthData } = useHealthStore();
 
   const fetchHealthData = async () => {
     try {
@@ -110,7 +104,6 @@ export function HealthForm({ onSubmit, initialData, loading }) {
       const healthData = response.data.data;
 
       if (healthData) {
-        // Save to global store
         setHealthData(healthData);
 
         const formattedData = {
@@ -130,182 +123,268 @@ export function HealthForm({ onSubmit, initialData, loading }) {
     }
   };
 
-  // Add useEffect to fetch data on mount
-  useEffect(() => {
-    fetchHealthData();
-  }, [user]);
+  const toggleSection = (section) => {
+    setOpenSection(openSection === section ? null : section);
+  };
+
+  const AccordionSection = ({ id, title, icon, children }) => {
+    const isOpen = openSection === id;
+    
+    return (
+      <div className="border border-zinc-800 rounded-xl overflow-hidden mb-4">
+        <button 
+          onClick={() => toggleSection(id)}
+          className="w-full flex items-center justify-between p-4 bg-zinc-800/50"
+        >
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${isOpen ? 'bg-blue-500/20' : 'bg-zinc-700/50'}`}>
+              {icon}
+            </div>
+            <h3 className="text-lg font-medium text-white">{title}</h3>
+          </div>
+          <ChevronDown className={`w-5 h-5 text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {isOpen && (
+          <div className="p-4 bg-zinc-900/50">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl py-2 px-4 border border-zinc-800 max-w-md mx-auto">
-      <form onSubmit={handleSubmit(handleSubmitting)} className="space-y-4">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {bmi && (
-            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <Activity className="w-6 h-6 text-blue-500" />
-                </div>
-                <span
-                  className={`text-sm font-medium ${getBmiCategory(bmi).color}`}
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-white">Your Health Profile</h2>
+        {bmi && (
+          <div className={`py-1 px-3 rounded-full flex items-center gap-2 ${getBmiCategory(bmi).bg}`}>
+            <span className="text-sm">{bmi} BMI</span>
+            <span className={`text-sm font-bold ${getBmiCategory(bmi).color}`}>
+              {getBmiCategory(bmi).label}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit(handleSubmitting)} className="space-y-6">
+        <AccordionSection 
+          id="basic" 
+          title="Personal Information" 
+          icon={<User2 className="w-5 h-5 text-blue-400" />}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm text-zinc-300">Age</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  {...register("age")}
+                  className="w-full p-3 pl-10 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white"
+                  placeholder="Enter your age"
+                />
+                <User2 className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm text-zinc-300">Gender</label>
+              <div className="grid grid-cols-3 gap-3">
+                {['male', 'female', 'other'].map((gender) => (
+                  <label 
+                    key={gender} 
+                    className={`flex items-center justify-center p-3 rounded-lg border ${
+                      watch('gender') === gender 
+                        ? 'bg-blue-600/20 border-blue-500 text-white' 
+                        : 'bg-zinc-800/50 border-zinc-700 text-zinc-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      {...register("gender")}
+                      value={gender}
+                      className="sr-only"
+                    />
+                    <span className="capitalize">{gender}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </AccordionSection>
+
+        <AccordionSection 
+          id="measurements" 
+          title="Body Measurements" 
+          icon={<Ruler className="w-5 h-5 text-purple-400" />}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm text-zinc-300">Weight (kg)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  {...register("weight")}
+                  className="w-full p-3 pl-10 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white"
+                  placeholder="Enter your weight"
+                />
+                <Scale className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm text-zinc-300">Height (cm)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  {...register("height")}
+                  className="w-full p-3 pl-10 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white"
+                  placeholder="Enter your height"
+                />
+                <Ruler className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
+              </div>
+            </div>
+          </div>
+        </AccordionSection>
+
+        <AccordionSection 
+          id="goals" 
+          title="Fitness Goals" 
+          icon={<Target className="w-5 h-5 text-red-400" />}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm text-zinc-300">Your Goal</label>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { value: 'lose_weight', label: 'Lose Weight', icon: <Zap className="w-4 h-4" /> },
+                  { value: 'maintain', label: 'Maintain Weight', icon: <Activity className="w-4 h-4" /> },
+                  { value: 'gain_weight', label: 'Gain Weight', icon: <Scale className="w-4 h-4" /> },
+                  { value: 'muscle_gain', label: 'Gain Muscle', icon: <Dumbbell className="w-4 h-4" /> }
+                ].map((goal) => (
+                  <label 
+                    key={goal.value} 
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      watch('goal') === goal.value 
+                        ? 'bg-blue-600/20 border-blue-500 text-white' 
+                        : 'bg-zinc-800/50 border-zinc-700 text-zinc-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      {...register("goal")}
+                      value={goal.value}
+                      className="sr-only"
+                    />
+                    <div className={`p-1 rounded-full ${watch('goal') === goal.value ? 'bg-blue-500/20' : 'bg-zinc-700/50'}`}>
+                      {goal.icon}
+                    </div>
+                    <span>{goal.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm text-zinc-300">Activity Level</label>
+              <div className="relative">
+                <select
+                  {...register("activityLevel")}
+                  className="w-full p-3 pl-10 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white appearance-none"
                 >
-                  {getBmiCategory(bmi).label}
-                </span>
+                  <option value="sedentary">Sedentary (Little to no exercise)</option>
+                  <option value="light">Light (1-3 days/week)</option>
+                  <option value="moderate">Moderate (3-5 days/week)</option>
+                  <option value="active">Very Active (6-7 days/week)</option>
+                </select>
+                <Heart className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-zinc-500 pointer-events-none" />
               </div>
-              <p className="text-2xl font-bold text-white mb-1">{bmi}</p>
-              <p className="text-sm text-zinc-400">Body Mass Index</p>
-            </div>
-          )}
-
-          {weight && (
-            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <Scale className="w-6 h-6 text-emerald-500" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-white mb-1">{weight} kg</p>
-              <p className="text-sm text-zinc-400">Current Weight</p>
-            </div>
-          )}
-        </div>
-
-        {/* Basic Information */}
-        <div>
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <User2 className="w-5 h-5" />
-            Basic Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Age</label>
-              <input
-                type="number"
-                {...register("age")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Gender
-              </label>
-              <select
-                {...register("gender")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
-              >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
             </div>
           </div>
-        </div>
+        </AccordionSection>
 
-        {/* Body Measurements */}
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <Ruler className="w-5 h-5" />
-            Body Measurements
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Weight (kg)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                {...register("weight")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Height (cm)
-              </label>
-              <input
-                type="number"
-                {...register("height")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Goals & Activity */}
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Goals & Activity
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">Goal</label>
-              <select
-                {...register("goal")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
-              >
-                <option value="lose_weight">Lose Weight</option>
-                <option value="gain_weight">Gain Weight</option>
-                <option value="maintain">Maintain Weight</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Activity Level
-              </label>
-              <select
-                {...register("activityLevel")}
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300"
-              >
-                <option value="sedentary">Sedentary</option>
-                <option value="light">Light Activity</option>
-                <option value="moderate">Moderate Activity</option>
-                <option value="active">Very Active</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Dietary Information */}
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <Apple className="w-5 h-5" />
-            Dietary Information
-          </h2>
+        <AccordionSection 
+          id="dietary" 
+          title="Dietary Preferences" 
+          icon={<Apple className="w-5 h-5 text-green-400" />}
+        >
           <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Dietary Restrictions
-              </label>
-              <input
-                type="text"
-                {...register("dietaryRestrictions")}
-                placeholder="E.g., vegetarian, vegan, gluten-free (separate with commas)"
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-              />
+            <div>
+              <label className="text-sm text-zinc-300">Dietary Restrictions</label>
+              <div className="relative">
+                <textarea
+                  {...register("dietaryRestrictions")}
+                  placeholder="e.g., vegetarian, vegan, gluten-free, keto (separate with commas)"
+                  className="w-full p-3 min-h-20 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {['vegan','diabetes','hypertension','iron-deficiency','pregnant','IBS'].map(item => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => {
+                      const current = watch('dietaryRestrictions');
+                      const items = current ? current.split(',').map(i => i.trim()) : [];
+                      if (!items.includes(item)) {
+                        setValue('dietaryRestrictions', [...items, item].join(', '));
+                      }
+                    }}
+                    className="text-xs px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300"
+                  >
+                    + {item}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                Allergies
-              </label>
-              <input
-                type="text"
-                {...register("allergies")}
-                placeholder="E.g., nuts, dairy, shellfish (separate with commas)"
-                className="w-full p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 focus:border-blue-500 transition-colors text-gray-300 placeholder-gray-500"
-              />
+            
+            <div>
+              <label className="text-sm text-zinc-300">Allergies & Intolerances</label>
+              <div className="relative">
+                <textarea
+                  {...register("allergies")}
+                  placeholder="e.g., nuts, dairy, shellfish, eggs (separate with commas)"
+                  className="w-full p-3 min-h-20 rounded-lg bg-zinc-800/70 border border-zinc-700 text-white"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {['nuts', 'dairy', 'gluten', 'eggs', 'shellfish', 'soy'].map(item => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => {
+                      const current = watch('allergies');
+                      const items = current ? current.split(',').map(i => i.trim()) : [];
+                      if (!items.includes(item)) {
+                        setValue('allergies', [...items, item].join(', '));
+                      }
+                    }}
+                    className="text-xs px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300"
+                  >
+                    + {item}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </AccordionSection>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl disabled:opacity-50 font-medium"
         >
-          {isLoading ? "Saving Changes..." : "Save Changes"}
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-5 h-5 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+              <span>Saving Changes...</span>
+            </div>
+          ) : (
+            <span>Save & Continue</span>
+          )}
         </button>
       </form>
     </div>

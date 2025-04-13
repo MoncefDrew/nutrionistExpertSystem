@@ -1,5 +1,4 @@
-
-export function PersonalizedMealPlan(healthData: HealthData): string {
+export function PersonalizedMealPlan(healthData: HealthData, foodToEvaluate?: string): string {
   if (!healthData) return "Please complete your health profile to receive a meal plan.";
 
   const {
@@ -13,36 +12,96 @@ export function PersonalizedMealPlan(healthData: HealthData): string {
     activityLevel,
   } = healthData;
 
-  // Step 1: Determine Calorie Target Based on Goal
-  const calorieTargetMap: Record<string, number> = {
-    "lose weight": 1600,
-    "maintain weight": 2000,
-    "gain muscle": 2500,
-    "gain weight": 2800,
+  const isMale = gender?.toLowerCase() === "male";
+  const bmr = isMale
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161;
+
+  const activityMultipliers: Record<string, number> = {
+    sedentary: 1.2,
+    "lightly active": 1.375,
+    "moderately active": 1.55,
+    "very active": 1.725,
+    "extra active": 1.9,
   };
 
-  const normalizedGoal = goal?.toLowerCase() || "maintain weight";
-  const calories = calorieTargetMap[normalizedGoal] || 2000;
+  const activity = activityLevel?.toLowerCase() || "moderately active";
+  const activityMultiplier = activityMultipliers[activity] ?? 1.55;
+  const tdee = bmr * activityMultiplier;
 
-  // Step 2: Adjust meals based on restrictions
+  const normalizedGoal = goal?.toLowerCase() || "maintain";
+  let calories = Math.round(tdee);
+
+  if (normalizedGoal === "lose_weight") {
+    calories = Math.round(tdee - 500);
+  } else if (normalizedGoal === "gain muscle") {
+    calories = Math.round(tdee + 300);
+  } else if (normalizedGoal === "gain_weight") {
+    calories = Math.round(tdee + 500);
+  }
+
+  const avoidIngredients = Allergies.map((a) => a.toLowerCase());
   const isVegan = dietaryRestrictions.includes("vegan");
   const isVegetarian = dietaryRestrictions.includes("vegetarian");
   const isKeto = dietaryRestrictions.includes("keto");
   const isGlutenFree = dietaryRestrictions.includes("gluten-free");
 
-  const avoidIngredients = Allergies.map(a => a.toLowerCase());
+  // ✅ Step: Check if the food is safe
+  if (foodToEvaluate) {
+    const foodLower = foodToEvaluate.toLowerCase();
+    const reasons: string[] = [];
 
-  // Helper to filter allergen ingredients
+    // Allergen check
+    for (const allergen of avoidIngredients) {
+      if (foodLower.includes(allergen)) {
+        reasons.push(`⚠️ Contains allergen: ${allergen}`);
+      }
+    }
+
+    // Dietary restriction checks
+    if (isVegan && /meat|chicken|fish|egg|dairy/i.test(foodLower)) {
+      reasons.push("❌ Not suitable for a vegan diet.");
+    }
+
+    if (isVegetarian && /meat|chicken|fish/i.test(foodLower)) {
+      reasons.push("❌ Not suitable for a vegetarian diet.");
+    }
+
+    if (isKeto && /bread|rice|pasta|sugar|carbs|potato/i.test(foodLower)) {
+      reasons.push("❌ Not suitable for a keto diet (too high in carbs).");
+    }
+
+    if (isGlutenFree && /bread|wheat|barley|rye|pasta/i.test(foodLower)) {
+      reasons.push("❌ Not gluten-free.");
+    }
+
+    // Goal-based check (simplified logic)
+    if (normalizedGoal === "lose weight" && /fried|sugar|dessert|fast food|cake|soda/i.test(foodLower)) {
+      reasons.push("⚠️ High-calorie food not ideal for weight loss.");
+    }
+
+    if (normalizedGoal === "gain muscle" && /low protein|junk food|soda/i.test(foodLower)) {
+      reasons.push("⚠️ Not protein-rich enough for muscle gain.");
+    }
+
+    if (reasons.length > 0) {
+      return `🍽️ **Evaluation of "${foodToEvaluate}":**\n\n❌ It is **not recommended** for your current health profile for the following reason(s):\n- ${reasons.join("\n- ")}`;
+    } else {
+      return `✅ **"${foodToEvaluate}" appears safe** for your current profile and dietary goals! Just keep portion size in mind.`;
+    }
+  }
+
+  // 👇 (Same code below for building the meal plan)
   const filterAllergens = (meal: string): string => {
     for (const allergen of avoidIngredients) {
-      if (meal.toLowerCase().includes(allergen)) {
+      const regex = new RegExp(`\\b${allergen}\\b`, "i");
+      if (regex.test(meal)) {
         return `${meal} (⚠️ *contains ${allergen}*)`;
       }
     }
     return meal;
   };
 
-  // Step 3: Build realistic meals
   let meals = {
     breakfast: "",
     lunch: "",
@@ -66,33 +125,23 @@ export function PersonalizedMealPlan(healthData: HealthData): string {
     meals.dinner = "Stir-fried tofu with vegetables and brown rice";
     meals.snacks = "Cottage cheese with sliced peaches";
   } else {
-    // General meal plan
     meals.breakfast = "Oatmeal with banana, peanut butter, and a boiled egg";
     meals.lunch = "Grilled chicken wrap with avocado and mixed greens";
     meals.dinner = "Beef stir-fry with bell peppers and steamed jasmine rice";
     meals.snacks = "Protein shake and carrot sticks with hummus";
   }
 
-  // Gluten-free adjustments (override bread-based meals)
   if (isGlutenFree) {
-    if (meals.breakfast.includes("toast") || meals.breakfast.includes("bread")) {
-      meals.breakfast = meals.breakfast.replace(/toast|bread/g, "gluten-free toast");
-    }
-    if (meals.lunch.includes("wrap") || meals.lunch.includes("sandwich")) {
-      meals.lunch = meals.lunch.replace(/wrap|sandwich/g, "gluten-free wrap");
-    }
+    meals.breakfast = meals.breakfast.replace(/(toast|bread)/gi, "gluten-free $1");
+    meals.lunch = meals.lunch.replace(/(wrap|sandwich|bread)/gi, "gluten-free $1");
   }
 
-  // Step 4: Filter meals for allergies
-  meals = {
-    breakfast: filterAllergens(meals.breakfast),
-    lunch: filterAllergens(meals.lunch),
-    dinner: filterAllergens(meals.dinner),
-    snacks: filterAllergens(meals.snacks),
-  };
+  for (const key in meals) {
+    const mealKey = key as keyof typeof meals;
+    meals[mealKey] = filterAllergens(meals[mealKey]);
+  }
 
-  // Step 5: Build response
-  let response = `🥗 Here's your personalized meal plan based on a **${calories}-calorie target** and your profile:\n\n`;
+  let response = `🥗 Here's your personalized meal plan based on a **${calories} kcal** target and your profile:\n\n`;
 
   response += `🍳 **Breakfast:** ${meals.breakfast}\n`;
   response += `🥪 **Lunch:** ${meals.lunch}\n`;
@@ -100,6 +149,10 @@ export function PersonalizedMealPlan(healthData: HealthData): string {
   response += `🥤 **Snacks:** ${meals.snacks}\n\n`;
 
   response += `📋 **Goal:** ${goal || "Maintain Weight"}\n`;
+  response += `🧍 **Gender:** ${gender}\n`;
+  response += `🎂 **Age:** ${age}\n`;
+  response += `⚖️ **Weight:** ${weight} kg\n`;
+  response += `📏 **Height:** ${height} cm\n`;
 
   if (dietaryRestrictions.length > 0) {
     response += `🚫 **Dietary Restrictions:** ${dietaryRestrictions.join(", ")}\n`;
@@ -113,7 +166,7 @@ export function PersonalizedMealPlan(healthData: HealthData): string {
     response += `🏃 **Activity Level:** ${activityLevel}\n`;
   }
 
-  response += `\n✅ Make sure to hydrate and stay active throughout the day. Let me know if you want recipes, meal substitutions, or a grocery list!`;
+  response += `\n✅ Make sure to hydrate and stay active throughout the day. Let me know if you want recipes, substitutions, or a grocery list!`;
 
   return response;
 }

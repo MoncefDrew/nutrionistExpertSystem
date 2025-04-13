@@ -9,15 +9,15 @@ export async function RecipeSuggestions(healthData: HealthData | null, input: st
 
   try {
     // Make a request to the Next.js API route for recipe suggestions
-    const response = await fetch(`/api/client/recipesApi/search?query=${encodeURIComponent(query)}&healthGoal=${encodeURIComponent(healthData.goal)}`);
+    const response = await axios.get(`/api/client/recipesApi/search?query=${encodeURIComponent(query)}&healthGoal=${encodeURIComponent(healthData.goal)}`);
 
     // Check if the response is successful
-    if (!response.ok) {
+    if (!response.status) {
       return "Something went wrong while fetching the recipe. Please try again later.";
     }
 
     // Parse the response data
-    const data = await response.json();
+    const data = await response.data();
 
     // If no recipes were found
     if (!data.recipes || data.recipes.length === 0) {

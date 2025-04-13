@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   role: 'client' | 'nutritionist';
   username: string;
