@@ -1,6 +1,26 @@
-import Image from "next/image"
+"use client"
+
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { User } from "lucide-react"
 
 export function TestimonialsSection() {
+  const [feedbacks, setFeedbacks] = useState([])
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const response = await axios.get("/api/client/feedback")
+        console.log(response)
+        setFeedbacks(response.data)
+      } catch (err) {
+        console.error("Failed to fetch feedbacks", err)
+      }
+    }
+
+    fetchFeedbacks()
+  }, [])
+
   return (
     <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32">
       <div className="container px-4 md:px-6 mx-auto">
@@ -12,43 +32,26 @@ export function TestimonialsSection() {
             </p>
           </div>
         </div>
+
         <div className="mx-auto grid max-w-5xl gap-6 py-12 lg:grid-cols-2">
-          <div className="rounded-lg border p-6">
-            <div className="flex items-start gap-4">
-              <Image
-                src="/avatars-000339084123-nag0p1-t1080x1080.jpg"
-                alt="Client"
-                width={60}
-                height={60}
-                className="rounded-full"
-              />
-              <div>
-                <p className="text-gray-500 italic">
-                  {`"The personalized nutrition plan helped me lose 20 pounds in 3 months. The expert guidance was
-                  invaluable!"`}
-                </p>
-                <p className="mt-2 font-semibold">Sarah J.</p>
+          {feedbacks.length > 0 ? (
+            feedbacks.map((f) => (
+              <div key={f.id} className="rounded-lg border p-6">
+                <div className="flex items-start gap-4">
+                  <div className="bg-gray-200 rounded-full p-3">
+                    <User className="text-gray-600 w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 italic">``{f.message}``</p>
+                    <p className="mt-2 font-semibold">{f.username ?? "Anonymous"}</p>
+                    <p className="text-yellow-500">{`⭐`.repeat(f.rating)}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="rounded-lg border p-6">
-            <div className="flex items-start gap-4">
-              <Image
-                src="/63.jpg"
-                alt="Client"
-                width={60}
-                height={60}
-                className="rounded-full"
-              />
-              <div>
-                <p className="text-gray-500 italic">
-                  {`"As a nutritionist, this platform has made it so much easier to manage my clients and provide them
-                  with personalized care."`}
-                </p>
-                <p className="mt-2 font-semibold">Dr. Michael T.</p>
-              </div>
-            </div>
-          </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">No feedback available yet.</p>
+          )}
         </div>
       </div>
     </section>

@@ -22,7 +22,9 @@ export function AuthHeader() {
   return (
     <div  className="flex-shrink-0 absolute bg-[#171717] top-0 left-0 right-0 p-4 flex items-center justify-between">
       <Link href="/" className="flex items-center gap-2">
-        <Leaf className="h-6 w-6 text-green-600" />
+        <div className="bg-green-600 rounded-md p-1 flex items-center justify-center">
+          <Leaf className="h-4 w-4 text-white" />
+        </div>
         <span className="font-bold text-gray-100">NutriExpert</span>
       </Link>
 

@@ -2,7 +2,8 @@
 import { useForm } from "react-hook-form";
 import { 
   Activity, Scale, Ruler, Target, Apple, User2, 
-  Heart, Zap, AlertCircle, ChevronDown, Info, Dumbbell
+  Heart, Zap, AlertCircle, ChevronDown, Info, Dumbbell,
+  Router
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,7 +42,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
       setBmi(parseFloat(bmiValue.toFixed(1)));
     }
   }, [weight, height]);
-
+  const router = useRouter()
   useEffect(() => {
     if (initialData) {
       Object.keys(initialData).forEach((key) => {
@@ -90,6 +91,8 @@ export function HealthForm({ onSubmit, initialData, loading }) {
       }
 
       toast.success("Health information saved successfully");
+      router.refresh()
+      router.push('/client/chat')
       
     } catch (error) {
       toast.error("Failed to save health information");
@@ -160,7 +163,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
         <h2 className="text-2xl font-bold text-white">Your Health Profile</h2>
         {bmi && (
           <div className={`py-1 px-3 rounded-full flex items-center gap-2 ${getBmiCategory(bmi).bg}`}>
-            <span className="text-sm">{bmi} BMI</span>
+            <span className="text-sm text-gray-200">{bmi} BMI</span>
             <span className={`text-sm font-bold ${getBmiCategory(bmi).color}`}>
               {getBmiCategory(bmi).label}
             </span>
@@ -262,7 +265,7 @@ export function HealthForm({ onSubmit, initialData, loading }) {
                   { value: 'lose_weight', label: 'Lose Weight', icon: <Zap className="w-4 h-4" /> },
                   { value: 'maintain', label: 'Maintain Weight', icon: <Activity className="w-4 h-4" /> },
                   { value: 'gain_weight', label: 'Gain Weight', icon: <Scale className="w-4 h-4" /> },
-                  { value: 'muscle_gain', label: 'Gain Muscle', icon: <Dumbbell className="w-4 h-4" /> }
+                  { value: 'gain_muscle', label: 'Gain Muscle', icon: <Dumbbell className="w-4 h-4" /> }
                 ].map((goal) => (
                   <label 
                     key={goal.value} 

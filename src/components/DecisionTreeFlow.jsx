@@ -1,22 +1,22 @@
-import { useState, useCallback, useEffect } from 'react';
-import ReactFlow, { 
-  Handle, 
-  Position, 
+import { useState, useCallback, useEffect } from "react";
+import ReactFlow, {
+  Handle,
+  Position,
   Background,
   MarkerType,
   useNodesState,
   useEdgesState,
-  Controls
-} from 'reactflow';
-import dagre from 'dagre';
-import SinusoidalEdge from './SinusoidalEdge';
-import 'reactflow/dist/style.css';
-import axios from 'axios';
-import { toast } from 'sonner';
+  Controls,
+} from "reactflow";
+import dagre from "dagre";
+import SinusoidalEdge from "./SinusoidalEdge";
+import "reactflow/dist/style.css";
+import axios from "axios";
+import { toast } from "sonner";
 
 // Custom Node Components
 const QuestionNode = ({ data }) => (
-  <div 
+  <div
     className="bg-[#1C1C1C] border border-[#2D2D2D] rounded-lg p-4 min-w-[250px]"
     onClick={data.onExpand}
   >
@@ -26,20 +26,36 @@ const QuestionNode = ({ data }) => (
         Final
       </span>
     )}
-    <Handle type="target" position={Position.Top} className="!bg-white w-2 h-2" />
-    <Handle type="source" position={Position.Bottom} className="!bg-white w-2 h-2" />
+    <Handle
+      type="target"
+      position={Position.Top}
+      className="!bg-white w-2 h-2"
+    />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className="!bg-white w-2 h-2"
+    />
   </div>
 );
 
 const OptionNode = ({ data }) => (
-  <div 
+  <div
     className="bg-[#242424] border border-[#2D2D2D] rounded p-3 min-w-[200px]"
     onClick={data.onExpand}
   >
     <div className="text-emerald-500 text-sm">Answer:</div>
     <div className="text-white text-sm mt-1">{data.label}</div>
-    <Handle type="target" position={Position.Top} className="!bg-white w-2 h-2" />
-    <Handle type="source" position={Position.Bottom} className="!bg-white w-2 h-2" />
+    <Handle
+      type="target"
+      position={Position.Top}
+      className="!bg-white w-2 h-2"
+    />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className="!bg-white w-2 h-2"
+    />
   </div>
 );
 
@@ -59,20 +75,20 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 250;
 const nodeHeight = 80;
 
-const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  const isHorizontal = direction === 'LR';
+const getLayoutedElements = (nodes, edges, direction = "TB") => {
+  const isHorizontal = direction === "LR";
   dagreGraph.setGraph({ rankdir: direction });
 
   // Clear the graph
-  dagreGraph.nodes().forEach(node => dagreGraph.removeNode(node));
+  dagreGraph.nodes().forEach((node) => dagreGraph.removeNode(node));
 
   // Add nodes to the graph
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
   });
 
   // Add edges to the graph
-  edges.forEach(edge => {
+  edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
 
@@ -80,7 +96,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
   dagre.layout(dagreGraph);
 
   // Get the layout results
-  const layoutedNodes = nodes.map(node => {
+  const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     return {
       ...node,
@@ -105,10 +121,10 @@ const DecisionTreeFlow = ({ questions }) => {
     // Add question node
     const questionNode = {
       id: question.id,
-      type: 'question',
-      data: { 
+      type: "question",
+      data: {
         text: question.text,
-        isFinal: question.isFinal
+        isFinal: question.isFinal,
       },
       position: { x: 0, y: 0 }, // Position will be calculated by dagre
     };
@@ -119,7 +135,7 @@ const DecisionTreeFlow = ({ questions }) => {
       question.options.forEach((option) => {
         const optionNode = {
           id: `option-${option.id}`,
-          type: 'option',
+          type: "option",
           data: { label: option.label },
           position: { x: 0, y: 0 },
         };
@@ -130,20 +146,21 @@ const DecisionTreeFlow = ({ questions }) => {
           id: `q${question.id}-o${option.id}`,
           source: question.id,
           target: `option-${option.id}`,
-          type: 'sinusoidal',
-          style: { 
-            stroke: '#ffffff', 
+          type: "sinusoidal",
+          style: {
+            stroke: "#ffffff",
             strokeWidth: 1,
-            opacity: 0.8
+            opacity: 0.8,
           },
           markerEnd: {
             type: MarkerType.Arrow,
-            color: '#ffffff',
-          }
+            color: "#ffffff",
+          },
         });
 
         if (option.next) {
-          const { nodes: childNodes, edges: childEdges } = processQuestionAndOptions(option.next);
+          const { nodes: childNodes, edges: childEdges } =
+            processQuestionAndOptions(option.next);
           newNodes.push(...childNodes);
           newEdges.push(...childEdges);
 
@@ -152,16 +169,16 @@ const DecisionTreeFlow = ({ questions }) => {
             id: `o${option.id}-q${option.next.id}`,
             source: `option-${option.id}`,
             target: option.next.id,
-            type: 'sinusoidal',
-            style: { 
-              stroke: '#ffffff', 
+            type: "sinusoidal",
+            style: {
+              stroke: "#ffffff",
               strokeWidth: 1,
-              opacity: 0.8
+              opacity: 0.8,
             },
             markerEnd: {
               type: MarkerType.Arrow,
-              color: '#ffffff',
-            }
+              color: "#ffffff",
+            },
           });
         }
       });
@@ -176,28 +193,29 @@ const DecisionTreeFlow = ({ questions }) => {
       const allEdges = [];
 
       questions.forEach((question) => {
-        const { nodes: newNodes, edges: newEdges } = processQuestionAndOptions(question);
+        const { nodes: newNodes, edges: newEdges } =
+          processQuestionAndOptions(question);
         allNodes.push(...newNodes);
         allEdges.push(...newEdges);
       });
 
       // Apply layout with increased spacing
-      dagreGraph.setGraph({ 
-        rankdir: 'TB',
-        nodesep: 80,  // Horizontal spacing between nodes
+      dagreGraph.setGraph({
+        rankdir: "TB",
+        nodesep: 80, // Horizontal spacing between nodes
         ranksep: 120, // Vertical spacing between ranks
-        edgesep: 40,  // Minimum edge separation
+        edgesep: 40, // Minimum edge separation
       });
 
-      const layouted = getLayoutedElements(allNodes, allEdges, 'TB');
-      
+      const layouted = getLayoutedElements(allNodes, allEdges, "TB");
+
       setNodes(layouted.nodes);
       setEdges(layouted.edges);
     }
   }, [questions, processQuestionAndOptions, setEdges, setNodes]);
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -208,22 +226,22 @@ const DecisionTreeFlow = ({ questions }) => {
         fitView
         className="bg-[#171717]"
         defaultEdgeOptions={{
-          type: 'sinusoidal',
-          style: { 
-            stroke: '#ffffff', 
+          type: "sinusoidal",
+          style: {
+            stroke: "#ffffff",
             strokeWidth: 1,
-            opacity: 0.8
+            opacity: 0.8,
           },
           markerEnd: {
             type: MarkerType.Arrow,
-            color: '#ffffff',
-          }
+            color: "#ffffff",
+          },
         }}
         minZoom={0.1}
         maxZoom={1.5}
-        fitViewOptions={{ 
+        fitViewOptions={{
           padding: 0.2,
-          includeHiddenNodes: true
+          includeHiddenNodes: true,
         }}
       >
         <Background color="#2D2D2D" gap={16} />
@@ -233,4 +251,4 @@ const DecisionTreeFlow = ({ questions }) => {
   );
 };
 
-export default DecisionTreeFlow; 
+export default DecisionTreeFlow;

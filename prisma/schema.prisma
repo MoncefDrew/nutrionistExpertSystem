@@ -19,6 +19,8 @@ model User {
   updatedAt      DateTime @updatedAt
   health         Health?
   mealPlan       MealPlan?
+
+  Feedback Feedback[]
 }
 
 
@@ -75,4 +77,14 @@ model MealPlan {
   snacks            Json      // Use jsonb type for snacks
   preferredCuisines String[]   // Ensure this field is present
 
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  message   String
+  rating    Int?     // Optional: 1-5 stars
+  createdAt DateTime @default(now())
+  username String?
 }
